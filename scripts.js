@@ -18,7 +18,7 @@ saveButton.appendChild(saveText);
 
 var saveButtonLink = document.createElement("a");
 saveButtonLink.setAttribute("id", "download");
-saveButtonLink.setAttribute("download", "collage.jpg");
+saveButtonLink.setAttribute("download", "collage.png");
 saveButtonLink.setAttribute("href", "");
 saveButtonLink.appendChild(saveButton);
 
@@ -56,7 +56,7 @@ function drawText() {
         }
 
     resultImage = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-    saveButtonLink.href = resultImage;
+    saveButtonLink.setAttribute('href', resultImage);
 
 }
 
