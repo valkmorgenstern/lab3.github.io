@@ -10,22 +10,58 @@ var canvas = document.createElement("canvas");
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 
+var saveText = document.createElement("p");
+saveText.innerText = "Save";
 
-// var generateText = document.createElement("p");
-// generateText.innerText = "Generate";
-//
-// var newButton = document.createElement('button');
-// newButton.setAttribute('onclick', draw());
-// newButton.setAttribute("style", "margin-right: 15px")
-// newButton.appendChild(generateText);
+var saveButton = document.createElement("button");
+saveButton.appendChild(saveText);
+
+var saveButtonLink = document.createElement("a");
+saveButtonLink.setAttribute("id", "download");
+saveButtonLink.setAttribute("download", "collage.jpg");
+saveButtonLink.setAttribute("href", "");
+saveButtonLink.appendChild(saveButton);
 
 var body = document.getElementsByTagName('body')[0];
-
 body.appendChild(canvas);
-// body.appendChild(newButton);
+body.appendChild(saveButtonLink);
 
+var ctx = canvas.getContext('2d');
+
+var padding = 10, fontSize = 30;
+
+// ctx.textAlign = 'center';
+ctx.font = fontSize + 'px Luminari';
+ctx.fillStyle = 'white';
+
+var resultImage = null;
+
+function drawText() {
+
+    var quoteStrings = [];
+    var arrQuote = quote.split(" ");
+    var pointer = 0;
+    for (var i = 0; i < arrQuote.length; i++) {
+            if (ctx.measureText(arrQuote.slice(pointer, i + 1).join(" ")).width >= canvas.width - 2 * padding) {
+                quoteStrings.push(arrQuote.slice(pointer, i).join(" "));
+                pointer = i;
+            }
+        }
+    quoteStrings.push(arrQuote.slice(pointer, arrQuote.length).join(" "));
+
+    for (var i = 0; i < quoteStrings.length; i++) {
+        ctx.fillText(quoteStrings[i],
+                (canvas.width - ctx.measureText(quoteStrings[i]).width)/2,
+                (canvas.height - 2 * padding - fontSize * quoteStrings.length) / 2 + fontSize * (i + 1.2));
+        }
+
+    resultImage = canvas.toDataURL("image/jpg");
+    saveButtonLink.href = resultImage;
+
+}
 
 function text() {
+
     var url = 'https://cors-anywhere.herokuapp.com/http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=ru';
 
     var xhr = new XMLHttpRequest();
@@ -34,9 +70,8 @@ function text() {
             if (xhr.status == 200) {
                 var myText = xhr.responseText;
                 console.log(myText);
-                console.log(typeof myText);
-                var quote = myText.split('\"')[3];
-                console.log(quote);
+                quote = myText.split('\"')[3];
+                drawText();
             }
             else throw new Error("Request failed");
         }
@@ -45,38 +80,39 @@ function text() {
     xhr.send(null);
 }
 
+var imageUrl1 = 'https://source.unsplash.com/collection/762960/420x320';
+var imageUrl2 = 'https://source.unsplash.com/collection/2446638/420x320';
+var imageUrl3 = 'https://source.unsplash.com/collection/162326/420x320';
+var imageUrl4 = 'https://source.unsplash.com/collection/1254524/420x320';
+var sources = [imageUrl1, imageUrl2, imageUrl3, imageUrl4];
 
-var ctx = canvas.getContext('2d');
 
-function draw() {
+function draw(imageSources, callback) {
 
-    ctx.strokeRect(0, 0, 840, 640);
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-    var image1 = new Image();
-    image1.src = 'https://source.unsplash.com/collection/762960/420x320';
-    image1.onload = function () {
-        ctx.drawImage(image1, 0, 0);
-    };
+    var images = new Array(4);
 
-    var image2 = new Image();
-    image2.src = 'https://source.unsplash.com/collection/2446638/420x320';
-    image2.onload = function () {
-        ctx.drawImage(image2, imageWidth, 0);
-    };
-
-    var image3 = new Image();
-    image3.src = 'https://source.unsplash.com/collection/162326/420x320';
-    image3.onload = function () {
-        ctx.drawImage(image3, 0, imageHeight);
-    };
-
-    var image4 = new Image();
-    image4.src = 'https://source.unsplash.com/collection/1254524/420x320';
-    image4.onload = function () {
-        ctx.drawImage(image4, imageWidth, imageHeight);
+    for (var i = 0; i < 4; i++) {
+        images[i] = new Image();
+        images[i].src = imageSources[i];
     }
+        var counter = 0;
+        images[0].onload = images[1].onload = images[2].onload = images[3].onload = function () {
+            counter++;
+            if (counter == 4) {
+                ctx.drawImage(images[0], 0, 0);
+                ctx.drawImage(images[1], imageWidth, 0);
+                ctx.drawImage(images[2], 0, imageHeight);
+                ctx.drawImage(images[3], imageWidth, imageHeight);
+                callback();
+            }
+        };
 
 }
 
-draw();
-text();
+
+var quote = null;
+
+
+draw(sources, text);
