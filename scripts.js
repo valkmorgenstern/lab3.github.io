@@ -55,7 +55,7 @@ function drawText() {
                 (canvas.height - 2 * padding - fontSize * quoteStrings.length) / 2 + fontSize * (i + 1.2));
         }
 
-    resultImage = canvas.toDataURL("image/jpg");
+    resultImage = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
     saveButtonLink.href = resultImage;
 
 }
@@ -96,6 +96,7 @@ function draw(imageSources, callback) {
     for (var i = 0; i < 4; i++) {
         images[i] = new Image();
         images[i].src = imageSources[i];
+        images[i].setAttribute('crossOrigin', 'anonymous');
     }
         var counter = 0;
         images[0].onload = images[1].onload = images[2].onload = images[3].onload = function () {
